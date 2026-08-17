@@ -1,0 +1,4 @@
+interface:
+  display_name: "Explore Design Inspiration"
+  short_description: "Find project-aware, source-backed design directions"
+  default_prompt: "Use $explore-design-inspiration to research and synthesize original design directions for my current project."
