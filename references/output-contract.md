@@ -4,7 +4,7 @@ Return a curated, image-first design result. Do not return a raw browsing diary,
 
 ## Non-Negotiable Delivery Contract
 
-- A complete default result contains 5-8 reference cards and every card renders at least one real source image or captured source screenshot.
+- A complete default result contains 5-8 reference cards and every card renders at least one real source image or captured source screenshot through typed media or a verified local artifact.
 - Every image card displays its canonical source URL immediately beside or below the image.
 - Both the image and source URL are required. Missing either one disqualifies the card from the final gallery.
 - Generated images never count as source references. Label generated direction boards as synthesis.
@@ -16,10 +16,12 @@ Return a curated, image-first design result. Do not return a raw browsing diary,
 
 Lead with the images. Return 5-8 reference cards by default, unless the user explicitly requests fewer.
 
-Use this presentation pattern when Markdown images are supported:
+In typed-media mode, insert the actual viewable media attachment immediately before its title and source. Do not replace it with a text representation of its result field or resource id.
+
+Use this presentation pattern in verified-local-artifact mode when the client supports Markdown images from absolute local paths:
 
 ```markdown
-![Descriptive alt text](https://displayable.example/reference.jpg)
+![Descriptive alt text](/absolute/path/to/verified-reference.jpg)
 
 **Project title — Creator**<br>
 Source: [Original project page](https://canonical.example/project)
@@ -34,6 +36,8 @@ Keep the image, title, creator, and source link in the same card. Then include:
 - confidence and freshness or access note.
 
 If the image is a captured screenshot, link the card to the page that was captured, not merely to the screenshot artifact.
+
+Use the absolute artifact path emitted by `verify-image-references.mjs`; do not substitute the original remote preview URL. When the client requires a native image attachment instead of Markdown, attach the verified artifact through the client and keep the canonical source link in the same card. A tool handle printed as text is not an image.
 
 ### 2. Research Brief
 
@@ -118,6 +122,20 @@ When the client supports structured output, append one valid JSON block with the
         "preview_image_url": "",
         "image_kind": "source-preview|captured-screenshot",
         "image_alt": "",
+        "image_delivery": {
+          "kind": "typed-media|verified-local-artifact",
+          "media_field": "",
+          "resource_id": "",
+          "artifact_path": "",
+          "mime_type": "image/png|image/jpeg|image/gif|image/webp"
+        },
+        "image_verification": {
+          "status": "verified",
+          "mime_type": "image/png|image/jpeg|image/gif|image/webp",
+          "width": 0,
+          "height": 0,
+          "sha256": ""
+        },
         "observed_pattern": "",
         "project_relevance": "",
         "avoid_copying": "",
@@ -163,13 +181,14 @@ When the client supports structured output, append one valid JSON block with the
 }
 ```
 
-For final references, `source_url`, `preview_image_url`, `image_kind`, and `image_alt` are required and must not be empty. Exclude the reference when the image or source URL is unavailable. Never invent a creator, image URL, date, or source URL to make the schema look complete.
+For final references, `source_url`, `image_kind`, `image_alt`, and `image_delivery` are required. In typed-media mode, preserve the actual attached image separately, populate only identifiers that the tool really returned, allow `preview_image_url` to be empty, and omit `image_verification`. In verified-local-artifact mode, `preview_image_url`, `image_delivery.artifact_path`, and `image_verification` are required and point to the verified absolute artifact. Exclude the reference when the image or source URL is unavailable. Never invent an attachment, resource id, verification metadata, creator, image URL, date, or source URL to make the schema look complete.
 
 ## Quality Gate
 
 Before returning the result, confirm:
 
 - every reference has a canonical source;
+- every reference has either a currently viewable typed-media attachment or passed `verify-image-references.mjs` and then `select-candidates.mjs`;
 - every reference renders a visible image before any text-only analysis;
 - every image has its canonical source URL in the same card;
 - every visual claim was actually observed;

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const SCORE_WEIGHTS = Object.freeze({
   projectFit: 0.3,
@@ -49,14 +50,20 @@ export function canonicalizeUrl(rawUrl) {
   }
 }
 
-export function isDisplayableImageReference(rawValue) {
-  const value = String(rawValue ?? "").trim();
-  if (!value) return false;
-  if (path.isAbsolute(value) || /^data:image\//i.test(value)) return true;
+export function isVerifiedImageReference(candidate) {
+  const value = String(candidate?.previewImageUrl ?? candidate?.imageUrl ?? "").trim();
+  const verification = candidate?.imageVerification;
+  const delivery = candidate?.imageDelivery;
+  if (!path.isAbsolute(value) || verification?.status !== "verified") return false;
+  if (delivery?.kind !== "verified-local-artifact" || path.resolve(String(delivery.artifactPath ?? "")) !== path.resolve(value)) return false;
+  if (path.resolve(value) !== path.resolve(String(verification.artifactPath ?? ""))) return false;
+  if (!verification.mimeType?.startsWith("image/") || !verification.width || !verification.height || !verification.sha256) return false;
 
   try {
-    const url = new URL(value);
-    return ["http:", "https:", "file:", "artifact:"].includes(url.protocol);
+    const stats = fs.statSync(value);
+    if (!stats.isFile() || stats.size !== verification.bytes) return false;
+    const digest = crypto.createHash("sha256").update(fs.readFileSync(value)).digest("hex");
+    return digest === verification.sha256;
   } catch {
     return false;
   }
@@ -128,8 +135,8 @@ export function selectCandidates(rawCandidates, options = {}) {
       continue;
     }
 
-    if (!isDisplayableImageReference(candidate.previewImageUrl)) {
-      rejected.push({ id: candidate.id, reason: "missing or invalid displayable preview image URL or screenshot artifact" });
+    if (!isVerifiedImageReference(candidate)) {
+      rejected.push({ id: candidate.id, reason: "image was not materialized and verified by verify-image-references.mjs" });
       continue;
     }
 
@@ -184,7 +191,7 @@ export function selectCandidates(rawCandidates, options = {}) {
       selectedCount: selected.length,
       duplicateCount: duplicates.length,
       rejectedCount: rejected.length,
-      imageRejectedCount: rejected.filter((item) => item.reason.includes("preview image")).length,
+      imageRejectedCount: rejected.filter((item) => item.reason.includes("image")).length,
     },
     selected: selected.map((candidate, index) => ({ rank: index + 1, ...candidate })),
     duplicates,
@@ -236,7 +243,14 @@ function runCli() {
   }
 }
 
-const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+const isDirectRun = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    return fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1]);
+  } catch {
+    return false;
+  }
+})();
 
 if (isDirectRun) {
   try {

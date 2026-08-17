@@ -27,17 +27,30 @@ references/source-routing.md
 references/selection-and-originality.md
 references/output-contract.md
 scripts/select-candidates.mjs
+scripts/verify-image-references.mjs
+test/image-references.test.mjs
 ```
 
-The Skill uses Ojo's `id` and `presentation` frontmatter extensions and also includes standard Codex interface metadata in `agents/openai.yaml`.
+The Skill uses standard `name` and `description` frontmatter plus Codex interface metadata in `agents/openai.yaml`. Ojo can derive the runtime skill id from `name` and uses its native typed-media result path for reference images.
 
-## Candidate Selection Utility
+## Image Verification and Candidate Selection
 
-For larger research pools, use the bundled dependency-free Node.js utility:
+Verify and materialize every candidate image before selection:
+
+```bash
+node scripts/verify-image-references.mjs \
+  --input candidates.json \
+  --artifact-dir .tmp/design-reference-images \
+  --output verified-candidates.json
+```
+
+The verifier rejects HTTP errors, non-image responses, unsupported or malformed image bytes, undersized images, uncontrolled local paths, and unsupported URL schemes. It emits absolute artifact paths plus integrity metadata. Exit code `2` indicates a partial result with rejection details in the output file.
+
+Then run the bundled dependency-free selector:
 
 ```bash
 node scripts/select-candidates.mjs \
-  --input candidates.json \
+  --input verified-candidates.json \
   --limit 8 \
   --max-per-family 3
 ```
