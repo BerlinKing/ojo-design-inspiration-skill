@@ -1,10 +1,41 @@
 # Output Contract
 
-Return a curated design result. Do not return a raw browsing diary or an unranked list of links.
+Return a curated, image-first design result. Do not return a raw browsing diary, an unranked list of links, or a text-only reference list.
+
+## Non-Negotiable Delivery Contract
+
+- A complete default result contains 5-8 reference cards and every card renders at least one real source image or captured source screenshot.
+- Every image card displays its canonical source URL immediately beside or below the image.
+- Both the image and source URL are required. Missing either one disqualifies the card from the final gallery.
+- Generated images never count as source references. Label generated direction boards as synthesis.
+- If the required image count cannot be reached safely, return a visibly incomplete result with the exact number found and the reason. Do not imply completion.
 
 ## User-Facing Structure
 
-### 1. Research Brief
+### 1. Visual Reference Gallery
+
+Lead with the images. Return 5-8 reference cards by default, unless the user explicitly requests fewer.
+
+Use this presentation pattern when Markdown images are supported:
+
+```markdown
+![Descriptive alt text](https://displayable.example/reference.jpg)
+
+**Project title — Creator**<br>
+Source: [Original project page](https://canonical.example/project)
+```
+
+Keep the image, title, creator, and source link in the same card. Then include:
+
+- source family and search lane;
+- the exact observed pattern;
+- why it matters to this project;
+- what not to copy;
+- confidence and freshness or access note.
+
+If the image is a captured screenshot, link the card to the page that was captured, not merely to the screenshot artifact.
+
+### 2. Research Brief
 
 Summarize:
 
@@ -14,19 +45,6 @@ Summarize:
 - assumptions with confidence.
 
 Keep this short enough that the user can correct it before implementation.
-
-### 2. Reference Shortlist
-
-Return 5-8 reference cards. Each card includes:
-
-- title and creator or publisher;
-- visible preview, when available and permitted;
-- source family and search lane;
-- canonical link;
-- the exact observed pattern;
-- why it matters to this project;
-- what not to copy;
-- confidence and freshness or access note.
 
 Distinguish observation from inference. For example:
 
@@ -98,6 +116,8 @@ When the client supports structured output, append one valid JSON block with the
         "search_lane": "domain|interaction|adjacent",
         "source_url": "",
         "preview_image_url": "",
+        "image_kind": "source-preview|captured-screenshot",
+        "image_alt": "",
         "observed_pattern": "",
         "project_relevance": "",
         "avoid_copying": "",
@@ -143,13 +163,15 @@ When the client supports structured output, append one valid JSON block with the
 }
 ```
 
-Use empty arrays or empty strings when a value is genuinely unavailable. Never invent a creator, image URL, date, or source URL to make the schema look complete.
+For final references, `source_url`, `preview_image_url`, `image_kind`, and `image_alt` are required and must not be empty. Exclude the reference when the image or source URL is unavailable. Never invent a creator, image URL, date, or source URL to make the schema look complete.
 
 ## Quality Gate
 
 Before returning the result, confirm:
 
 - every reference has a canonical source;
+- every reference renders a visible image before any text-only analysis;
+- every image has its canonical source URL in the same card;
 - every visual claim was actually observed;
 - preview images are real evidence, not generated stand-ins;
 - the shortlist is deduplicated and source-diverse;
@@ -157,3 +179,5 @@ Before returning the result, confirm:
 - recommendation criteria come from the brief;
 - uncertainty and access limits are visible;
 - implementation has not started without explicit instruction.
+
+Do not mark the result complete when any required image fails to render or any final card lacks a source URL.

@@ -49,6 +49,19 @@ export function canonicalizeUrl(rawUrl) {
   }
 }
 
+export function isDisplayableImageReference(rawValue) {
+  const value = String(rawValue ?? "").trim();
+  if (!value) return false;
+  if (path.isAbsolute(value) || /^data:image\//i.test(value)) return true;
+
+  try {
+    const url = new URL(value);
+    return ["http:", "https:", "file:", "artifact:"].includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
 function clampScore(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 0;
@@ -82,6 +95,7 @@ function projectIdentity(candidate) {
 function normalizeCandidate(candidate, index) {
   const sourceUrl = candidate.sourceUrl ?? candidate.url ?? "";
   const canonicalUrl = canonicalizeUrl(sourceUrl);
+  const previewImageUrl = String(candidate.previewImageUrl ?? candidate.imageUrl ?? "").trim();
   const totalScore = scoreCandidate(candidate);
 
   return {
@@ -89,6 +103,7 @@ function normalizeCandidate(candidate, index) {
     id: candidate.id ?? `candidate-${String(index + 1).padStart(2, "0")}`,
     sourceUrl,
     canonicalUrl,
+    previewImageUrl,
     sourceFamily: candidate.sourceFamily ?? "unknown",
     searchLane: candidate.searchLane ?? "unknown",
     totalScore,
@@ -110,6 +125,11 @@ export function selectCandidates(rawCandidates, options = {}) {
   for (const candidate of normalized) {
     if (!candidate.canonicalUrl) {
       rejected.push({ id: candidate.id, reason: "missing or invalid canonical source URL" });
+      continue;
+    }
+
+    if (!isDisplayableImageReference(candidate.previewImageUrl)) {
+      rejected.push({ id: candidate.id, reason: "missing or invalid displayable preview image URL or screenshot artifact" });
       continue;
     }
 
@@ -164,6 +184,7 @@ export function selectCandidates(rawCandidates, options = {}) {
       selectedCount: selected.length,
       duplicateCount: duplicates.length,
       rejectedCount: rejected.length,
+      imageRejectedCount: rejected.filter((item) => item.reason.includes("preview image")).length,
     },
     selected: selected.map((candidate, index) => ({ rank: index + 1, ...candidate })),
     duplicates,

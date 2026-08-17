@@ -7,6 +7,7 @@ Use a two-stage gate: first determine whether a candidate is trustworthy enough 
 Reject or quarantine a candidate when:
 
 - no canonical source can be identified;
+- no displayable source image or permitted screenshot can be obtained for the final card;
 - the visible evidence is only a search thumbnail or unattributed repost;
 - the claim depends on a page or state that was not actually observed;
 - the item is unrelated to the target user job despite superficial visual similarity;
@@ -36,6 +37,18 @@ Use confidence separately from score:
 - `medium`: reliable secondary source or partial direct evidence;
 - `low`: snippet, inaccessible state, uncertain authorship, or inference.
 
+## Mandatory Image and Source Gate
+
+A candidate may be scored provisionally without an image, but it cannot become a final reference until all of these are true:
+
+1. `sourceUrl` resolves to the canonical creator, product, repository, or publication page.
+2. `previewImageUrl` renders a meaningful source image, or points to a captured screenshot artifact from that page.
+3. The image visibly supports the observation made in the card.
+4. The image and source URL can be displayed together in the final response.
+5. The image is not an AI-generated substitute for unavailable source evidence.
+
+Fail closed: replace candidates that do not pass. A complete default result contains 5-8 passing references. If fewer are obtainable after the permitted search and capture attempts, label the result incomplete and report the exact shortfall.
+
 ## Deduplication
 
 Treat items as duplicates when they resolve to the same canonical URL, show the same project reposted by different galleries, or repeat the same visual and creator with no additional state.
@@ -59,6 +72,9 @@ Use this working-pool shape:
       "title": "Original project title",
       "creator": "Original creator or publisher",
       "sourceUrl": "https://canonical.example/work",
+      "previewImageUrl": "https://canonical.example/preview.jpg",
+      "imageKind": "source-preview|captured-screenshot",
+      "imageAlt": "Concise description of the visible reference",
       "sourceFamily": "live-product|flow-library|web-gallery|portfolio|editorial|open-code|social",
       "searchLane": "domain|interaction|adjacent",
       "scores": {
@@ -74,12 +90,13 @@ Use this working-pool shape:
 }
 ```
 
-Every score is 0-5. The script intentionally returns fewer than the requested limit when filling the limit would break the source-family cap. Review the rejected and duplicate lists before choosing finalists.
+Every score is 0-5. The script rejects candidates without both a canonical source URL and `previewImageUrl`. It intentionally returns fewer than the requested limit when filling the limit would break the source-family cap. Review the rejected and duplicate lists before choosing finalists.
 
 ## Diversity Gate
 
 A normal 5-8 item shortlist should:
 
+- contain a displayable image and canonical source URL for every item;
 - cover every search lane that produced relevant evidence;
 - include at least two source families;
 - include both product-behavior evidence and visual or emotional evidence;

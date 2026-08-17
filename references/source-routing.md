@@ -72,6 +72,15 @@ Prefer, in order:
 
 Down-rank search-result thumbnails, repost accounts, unsourced moodboards, AI-generated concepts presented without disclosure, and pages that cannot be inspected beyond a title.
 
+## Image Acquisition Rules
+
+- Use image search as discovery only. Open the result and verify the original creator or product page before using the image.
+- Prefer an image served by the original source, an official Open Graph preview, or a screenshot captured from the canonical page.
+- Record two distinct values: the displayable image URL or screenshot artifact, and the canonical source page URL.
+- Never use a search-results page, CDN URL, or social repost URL as the only attribution when an original page can be found.
+- Test that the image actually renders. A URL string that returns an error, login wall, placeholder, or tracking pixel does not satisfy the image requirement.
+- When an image cannot be embedded, capture the relevant source state. When capture is not allowed or fails, replace the candidate rather than returning a text-only card.
+
 ## Access and Safety
 
 - Respect robots, terms, login gates, paywalls, and rate limits.
