@@ -5,6 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { validateReferenceMedia } from "./reference-media-contract.mjs";
+
 const SCORE_WEIGHTS = Object.freeze({
   surfaceFit: 0.25,
   subjectFit: 0.25,
@@ -102,6 +104,8 @@ export function validateCandidateRelevance(candidate) {
   const mustMatchHits = stringArray(candidate?.mustMatchHits);
   const hardViolations = stringArray(candidate?.hardViolations);
   const reasons = [];
+  const mediaContract = validateReferenceMedia(candidate);
+  reasons.push(...mediaContract.reasons);
 
   if (!REFERENCE_ROLES.has(referenceRole)) {
     reasons.push("missing or invalid referenceRole; expected core, pattern, or mood");
@@ -164,6 +168,10 @@ function normalizeCandidate(candidate, index) {
     sourceFamily: candidate.sourceFamily ?? "unknown",
     searchLane: candidate.searchLane ?? "unknown",
     referenceRole: String(candidate.referenceRole ?? "").trim(),
+    referenceTarget: String(candidate.referenceTarget ?? "").trim(),
+    imageKind: String(candidate.imageKind ?? "").trim(),
+    formalAssetAvailable: candidate.formalAssetAvailable,
+    captureJustification: String(candidate.captureJustification ?? "").trim(),
     visibleEvidence: stringArray(candidate.visibleEvidence),
     mustMatchHits: stringArray(candidate.mustMatchHits),
     hardViolations: stringArray(candidate.hardViolations),

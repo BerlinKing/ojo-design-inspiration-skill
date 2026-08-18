@@ -33,6 +33,10 @@ Judge the exact image or captured state, not the reputation, category, title, or
 - `hardViolations`: explicit avoids or negative-anchor traits present in the image;
 - `mismatchRisks`: partial mismatches worth disclosing but not severe enough to reject;
 - `referenceRole`: `core`, `pattern`, or `mood`.
+- `referenceTarget`: `standalone-visual`, `interface`, `case-study`, or `motion`;
+- `imageKind`: `original-source-asset`, `official-preview`, or `captured-interface`;
+- `formalAssetAvailable`: whether formal creator-served media was available;
+- `captureJustification`: required only when the interface itself must be captured.
 
 Reject a finalist when `hardViolations` is non-empty or the image does not visibly support its claimed role. Do not write a post-hoc rationale to rescue a frame that misses the target.
 
@@ -76,6 +80,8 @@ A candidate may be scored provisionally without an image, but it cannot become a
 3. The image visibly supports the observation, role, and must-match claims made in the card.
 4. Typed media remains viewable in the current result, or `imageVerification.status` is `verified` and its hash still matches the local artifact; the image and source URL can be displayed together in the final response.
 5. The image is not an AI-generated substitute for unavailable source evidence.
+6. A standalone visual or case-study asset uses `original-source-asset` or `official-preview`, never `captured-interface`.
+7. `captured-interface` is used only for an `interface` target and includes a concrete `captureJustification`.
 
 Fail closed: replace candidates that do not pass. A detached media label, resource handle printed as text, or remote URL that was merely observed does not pass. A complete default result contains 5-8 passing references. If fewer are obtainable after the permitted search and capture attempts, label the result incomplete and report the exact shortfall.
 
@@ -103,7 +109,10 @@ Use this working-pool shape:
       "creator": "Original creator or publisher",
       "sourceUrl": "https://canonical.example/work",
       "previewImageUrl": "https://canonical.example/preview.jpg",
-      "imageKind": "source-preview|captured-screenshot",
+      "referenceTarget": "standalone-visual|interface|case-study|motion",
+      "imageKind": "original-source-asset|official-preview|captured-interface",
+      "formalAssetAvailable": true,
+      "captureJustification": "",
       "imageAlt": "Concise description of the visible reference",
       "sourceFamily": "live-product|flow-library|web-gallery|portfolio|editorial|open-code|social",
       "searchLane": "domain|interaction|adjacent",
@@ -129,7 +138,7 @@ The working pool may contain a remote preview URL. In typed-media mode, replace 
 
 In verified-local-artifact mode, run `scripts/verify-image-references.mjs` before selection. It validates the response or controlled local screenshot, detects the image type and dimensions, materializes remote images, and replaces `previewImageUrl` with a verified absolute artifact path. Its output also adds `imageDelivery` and `imageVerification`; never author those objects manually.
 
-Every score is 0-5. For local mode, the selector rejects candidates whose verified artifact is missing, changed, lacks verifier metadata, fails its role gate, or contains hard violations. It intentionally returns fewer than the requested limit when filling the limit would break a quality or diversity gate. Review the verifier rejections plus the selector's rejected, duplicate, and shortfall lists before choosing finalists. Apply the same relevance, ranking, and diversity judgment manually to typed-media candidates.
+Every score is 0-5. For local mode, the selector rejects candidates whose verified artifact is missing, changed, lacks verifier metadata, uses a page capture for a non-interface target, fails its role gate, or contains hard violations. It intentionally returns fewer than the requested limit when filling the limit would break a quality or diversity gate. Review the verifier rejections plus the selector's rejected, duplicate, and shortfall lists before choosing finalists. Apply the same media, relevance, ranking, and diversity judgment manually to typed-media candidates.
 
 ## Diversity Gate
 

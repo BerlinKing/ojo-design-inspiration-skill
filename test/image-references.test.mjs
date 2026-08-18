@@ -51,7 +51,10 @@ function candidate(overrides = {}) {
     creator: "Creator",
     sourceUrl: `${baseUrl}/project`,
     previewImageUrl: `${baseUrl}/image.png`,
-    imageKind: "source-preview",
+    referenceTarget: "standalone-visual",
+    imageKind: "official-preview",
+    formalAssetAvailable: true,
+    captureJustification: "",
     imageAlt: "A verified design reference",
     sourceFamily: "live-product",
     searchLane: "domain",
@@ -118,6 +121,26 @@ test("rejects private-network image fetches by default", async () => {
   const result = await verifyImageCandidates([candidate({ id: "private-network" })], { artifactDir, minWidth: 1, minHeight: 1 });
   assert.equal(result.summary.verifiedCount, 0);
   assert.match(result.rejected[0].reason, /local, private, or reserved address/);
+});
+
+test("rejects a hosting-page screenshot for a standalone visual", async () => {
+  const result = await verifyImageCandidates(
+    [candidate({ imageKind: "captured-interface", captureJustification: "The page was open in a browser." })],
+    { artifactDir, minWidth: 1, minHeight: 1, allowPrivateNetwork: true },
+  );
+
+  assert.equal(result.summary.verifiedCount, 0);
+  assert.match(result.rejected[0].reason, /captured-interface is allowed only when the interface itself is the reference target/);
+});
+
+test("allows an interface capture when the page composition is the evidence", async () => {
+  const result = await verifyImageCandidates(
+    [candidate({ referenceTarget: "interface", imageKind: "captured-interface", captureJustification: "The navigation and content layout are the reference." })],
+    { artifactDir, minWidth: 1, minHeight: 1, allowPrivateNetwork: true },
+  );
+
+  assert.equal(result.summary.verifiedCount, 1);
+  assert.equal(result.candidates[0].imageKind, "captured-interface");
 });
 
 test("CLI entrypoints run when invoked through a symlinked path", async () => {

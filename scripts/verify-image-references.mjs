@@ -8,6 +8,8 @@ import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { validateReferenceMedia } from "./reference-media-contract.mjs";
+
 const DEFAULT_MAX_BYTES = 15 * 1024 * 1024;
 const DEFAULT_MIN_WIDTH = 200;
 const DEFAULT_MIN_HEIGHT = 120;
@@ -221,6 +223,8 @@ export async function verifyImageCandidate(candidate, options, index = 0) {
   const sourceUrl = normalizeHttpUrl(candidate.sourceUrl ?? candidate.url, "sourceUrl");
   const imageAlt = String(candidate.imageAlt ?? "").trim();
   if (!imageAlt) throw new Error("imageAlt is required");
+  const mediaContract = validateReferenceMedia(candidate);
+  if (!mediaContract.eligible) throw new Error(`invalid reference media: ${mediaContract.reasons.join(" | ")}`);
 
   const acquired = await acquireImage(candidate, options);
   const inspected = inspectImageBuffer(acquired.buffer);
@@ -244,7 +248,7 @@ export async function verifyImageCandidate(candidate, options, index = 0) {
     ...candidate,
     sourceUrl,
     previewImageUrl: path.resolve(artifactPath),
-    imageKind: candidate.imageKind === "captured-screenshot" ? "captured-screenshot" : "source-preview",
+    ...mediaContract.normalized,
     imageAlt,
     imageDelivery: {
       kind: "verified-local-artifact",

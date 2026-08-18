@@ -52,6 +52,10 @@ function candidate(id, referenceRole = "core", overrides = {}) {
     },
     sourceFamily: `family-${id}`,
     searchLane: referenceRole === "mood" ? "adjacent" : "domain",
+    referenceTarget: "standalone-visual",
+    imageKind: "original-source-asset",
+    formalAssetAvailable: true,
+    captureJustification: "",
     referenceRole,
     visibleEvidence: ["Visible subject", "Visible composition cue"],
     mustMatchHits: referenceRole === "core" ? ["Target surface", "Required visual cue"] : ["Required visual cue"],
@@ -83,6 +87,30 @@ test("rejects hard visual violations instead of averaging them away", () => {
 
   assert.deepEqual(result.selected.map((item) => item.id), ["good-core"]);
   assert.equal(result.rejected.some((item) => item.id === "portrait-core"), true);
+});
+
+test("rejects an Unsplash-style page screenshot when the photo is the reference", () => {
+  const result = selectCandidates([
+    candidate("unsplash-page", "core", {
+      imageKind: "captured-interface",
+      captureJustification: "The image was visible inside the hosting page.",
+    }),
+  ], { limit: 1, minCore: 1 });
+
+  assert.equal(result.summary.selectedCount, 0);
+  assert.match(result.rejected[0].reason, /captured-interface is allowed only when the interface itself is the reference target/);
+});
+
+test("allows a justified interface capture when layout is the reference", () => {
+  const result = selectCandidates([
+    candidate("product-layout", "core", {
+      referenceTarget: "interface",
+      imageKind: "captured-interface",
+      captureJustification: "The navigation, hero hierarchy, and interaction layout are the reference.",
+    }),
+  ], { limit: 1, minCore: 1 });
+
+  assert.equal(result.summary.selectedCount, 1);
 });
 
 test("enforces the core minimum and mood maximum without forcing search lanes", () => {

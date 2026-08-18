@@ -16,6 +16,7 @@ Return a curated, image-first design result. Do not return a raw browsing diary,
 - At least half of a complete result, and never fewer than three when the requested count permits, are `core` references. Include at most one `mood` reference.
 - Every image card displays its canonical source URL immediately beside or below the image.
 - Both the image and source URL are required. Missing either one disqualifies the card from the final gallery.
+- For standalone photography, illustration, artwork, or campaign imagery, the rendered image is the formal source asset or official preview, never a screenshot of the hosting page.
 - Generated images never count as source references. Label generated direction boards as synthesis.
 - If the required image count cannot be reached safely, return a visibly incomplete result with the exact number found and the reason. Do not imply completion.
 
@@ -47,6 +48,8 @@ Keep the image, title, creator, and source link in the same card. Then include:
 - confidence and freshness or access note.
 
 If the image is a captured screenshot, link the card to the page that was captured, not merely to the screenshot artifact.
+
+Use a captured interface only when the UI, layout, or interaction context is the evidence being discussed. Do not show browser chrome, hosting-site controls, creator metadata panels, or download buttons around a standalone visual.
 
 Use the absolute artifact path emitted by `verify-image-references.mjs`; do not substitute the original remote preview URL. When the client requires a native image attachment instead of Markdown, attach the verified artifact through the client and keep the canonical source link in the same card. A tool handle printed as text is not an image.
 
@@ -146,7 +149,10 @@ When the client supports structured output, append one valid JSON block with the
         "reference_role": "core|pattern|mood",
         "source_url": "",
         "preview_image_url": "",
-        "image_kind": "source-preview|captured-screenshot",
+        "reference_target": "standalone-visual|interface|case-study|motion",
+        "image_kind": "original-source-asset|official-preview|captured-interface",
+        "formal_asset_available": true,
+        "capture_justification": "",
         "image_alt": "",
         "image_delivery": {
           "kind": "typed-media|verified-local-artifact",
@@ -210,7 +216,7 @@ When the client supports structured output, append one valid JSON block with the
 }
 ```
 
-For final references, `source_url`, `image_kind`, `image_alt`, and `image_delivery` are required. In typed-media mode, preserve the actual attached image separately, populate only identifiers that the tool really returned, allow `preview_image_url` to be empty, and omit `image_verification`. In verified-local-artifact mode, `preview_image_url`, `image_delivery.artifact_path`, and `image_verification` are required and point to the verified absolute artifact. Exclude the reference when the image or source URL is unavailable. Never invent an attachment, resource id, verification metadata, creator, image URL, date, or source URL to make the schema look complete.
+For final references, `source_url`, `reference_target`, `image_kind`, `formal_asset_available`, `image_alt`, and `image_delivery` are required. In typed-media mode, preserve the actual attached image separately, populate only identifiers that the tool really returned, allow `preview_image_url` to be empty, and omit `image_verification`. In verified-local-artifact mode, `preview_image_url`, `image_delivery.artifact_path`, and `image_verification` are required and point to the verified absolute artifact. Require `capture_justification` for `captured-interface`. Exclude the reference when the image or source URL is unavailable. Never invent an attachment, resource id, verification metadata, creator, image URL, date, or source URL to make the schema look complete.
 
 ## Quality Gate
 
@@ -221,6 +227,8 @@ Before returning the result, confirm:
 - every reference renders a visible image before any text-only analysis;
 - every image has its canonical source URL in the same card;
 - every visual claim was actually observed;
+- every standalone visual uses formal source media or an official preview rather than a hosting-page screenshot;
+- every captured interface targets interface evidence and states why page context is required;
 - every final reference passes its role-specific relevance gate and has no hard violation;
 - the gallery satisfies the core-reference minimum and mood-reference maximum;
 - calibration mode returns exactly three passing core cards and stops for user confirmation;

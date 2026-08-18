@@ -101,11 +101,13 @@ Down-rank search-result thumbnails, repost accounts, unsourced moodboards, AI-ge
 ## Image Acquisition Rules
 
 - Use image search as discovery only. Open the result and verify the original creator or product page before using the image.
-- Prefer an image served by the original source, an official Open Graph preview, or a screenshot captured from the canonical page.
+- Choose the delivered image in this order: original creator-served media asset; official project preview or Open Graph image; captured interface only when the interface itself is the reference subject.
+- On asset-centric pages such as photography libraries, illustration libraries, campaign archives, or portfolio lightboxes, inspect the displayed media source, responsive image candidates, official preview metadata, or an allowed media/download result. Deliver the formal photo or artwork, not the browser viewport containing it.
+- Do not crop browser chrome away and call the result an original asset. If formal standalone media cannot be acquired safely and reliably, replace the candidate.
 - Record the discovery image URL separately from the canonical source page URL. Preserve a viewable typed-media attachment when the capture tool returns one; otherwise run `scripts/verify-image-references.mjs` to materialize the discovery image as a controlled local artifact before selection.
 - Never use a search-results page, CDN URL, or social repost URL as the only attribution when an original page can be found.
 - In typed-media mode, confirm the image value itself is viewable and MIME typed inside the current tool result. In local mode, let the verifier test HTTP status, MIME type, supported image bytes, dimensions, size, and artifact integrity. A URL string alone never satisfies the image requirement.
-- When an image cannot be embedded, capture the relevant source state. When capture is not allowed or fails, replace the candidate rather than returning a text-only card.
+- Capture the source state only for interface, layout, or interaction evidence. When a standalone image cannot be embedded or materialized, replace the candidate rather than returning a page screenshot or text-only card.
 
 ## Access and Safety
 
