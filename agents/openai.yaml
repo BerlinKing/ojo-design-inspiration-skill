@@ -1,4 +1,4 @@
 interface:
   display_name: "Explore Design Inspiration"
   short_description: "Find project-aware, source-backed design directions"
-  default_prompt: "Use $explore-design-inspiration to return an image-first inspiration gallery with a canonical source URL for every reference, then synthesize original design directions for my current project."
+  default_prompt: "Use $explore-design-inspiration to return a visually precise, image-first inspiration gallery with a canonical source URL for every reference, then synthesize original design directions for my current project."

@@ -43,6 +43,8 @@ Choose one supported delivery mode before research:
 
 Do not use raw remote Markdown images, detached screenshot labels, tool handles printed as text, or URL-only metadata as final visual evidence. If neither mode is available, report an incomplete result rather than claiming an image gallery was delivered.
 
+Use **Calibration mode** only after the user rejects or materially redirects a returned set. Preserve the rejected images as negative anchors, extract the user's correction into must-match cues and hard exclusions, and return exactly three new image cards that each pass the relevance gate but vary on one meaningful axis. Ask which card is closest and stop before producing a full gallery or design directions. After the user chooses, treat that card as a positive anchor and resume the normal workflow.
+
 ## Research Workflow
 
 ### 1. Build a Research Brief
@@ -52,17 +54,19 @@ Write a compact internal brief with these fields:
 - product and domain;
 - primary audience;
 - user jobs and emotional goal;
-- target page, feature, or flow;
+- target artifact type, page, feature, or flow;
 - required UI patterns;
 - current design constraints;
 - explicit preferences;
-- cliches, brands, or treatments to avoid.
+- must-match subjects and visible visual cues;
+- exploratory qualities that are helpful but not required;
+- hard exclusions, rejected examples, cliches, brands, or treatments to avoid.
 
 Treat missing information as an explicit assumption with confidence, not as a fact.
 
 ### 2. Expand Three Search Lanes
 
-Always search beyond the product category:
+Search beyond the product category without allowing adjacent inspiration to replace direct evidence:
 
 1. **Domain lane** -- products and interfaces serving the same audience or scenario.
 2. **Interaction lane** -- products solving the same behavioral or information problem in another domain.
@@ -75,6 +79,8 @@ For a pet community app, for example:
 - Adjacent emotion: field guides, collectible cards, warm local publications, playful membership clubs.
 
 Generate several precise query variants per lane. Include the surface and interaction in queries; avoid relying on broad searches such as `pet app UI` alone.
+
+Build literal domain-and-surface queries first, visible-cue queries second, and adjacent-emotion queries last. Do not combine many abstract adjectives into one query and assume every result matches them. Translate user corrections into positive and negative query terms, but apply negative anchors during visual screening rather than relying on search syntax alone.
 
 ### 3. Search Broadly but Trace Every Result
 
@@ -89,13 +95,16 @@ Generate several precise query variants per lane. Include the surface and intera
 
 Stop broad discovery after two consecutive search passes add no materially new pattern or after the pool is sufficient for a diverse shortlist.
 
-### 4. Verify, Rank, Deduplicate, and Shortlist
+### 4. Verify the Exact Image, Rank, Deduplicate, and Shortlist
 
 Apply `references/selection-and-originality.md`.
 
+- Inspect the exact preview or captured state before assigning relevance scores. Do not score from the brand, page title, category, or search snippet alone.
+- Record `referenceRole`, at least two `visibleEvidence` observations, `mustMatchHits`, `hardViolations`, and `mismatchRisks` for every provisional finalist.
+- Reject a candidate with any hard violation. A core reference must visibly match the target surface, subject, and required visual cues; emotional similarity alone cannot compensate for a miss.
 - Score evidence before visual taste.
 - Deduplicate reposts, tracking variants, and repeated projects.
-- Select provisional finalists spanning at least two source families and all useful search lanes.
+- Select 5-8 provisional finalists spanning at least two source families. At least half, and never fewer than three when the requested count permits, must be `core` references; include at most one `mood` reference. Use `pattern` references for transferable structure or interaction. Do not force a weak search lane into the result.
 - In typed-media mode, require a viewable MIME-typed attachment plus canonical source URL for every finalist. Keep the attachment in the final response; do not convert it to a URL field. Rank this pool manually because the local selector cannot validate runtime media attachments.
 - In verified-local-artifact mode, materialize and verify every candidate image before final selection. Create a controlled artifact directory, save captured screenshots there, and run:
 
@@ -113,14 +122,14 @@ node <this-skill-directory>/scripts/verify-image-references.mjs \
 - In verified-local-artifact mode, run the selector on the verifier output:
 
 ```bash
-node <this-skill-directory>/scripts/select-candidates.mjs --input <verified-candidates.json> --limit 8 --max-per-family 3
+node <this-skill-directory>/scripts/select-candidates.mjs --input <verified-candidates.json> --limit 8 --max-per-family 3 --max-mood 1
 ```
 
 Use the script as a consistency aid, not as a replacement for design judgment.
 
 ### 5. Capture an Image for Every Finalist
 
-In typed-media mode, open `advanced-reference-capture` and use Quick Scan for broad inspiration, Style Analysis for visual-language evidence, and Structure + Style only for closer layout or flow comparison. Preserve the actual viewable attachment in the tool result; a separate `screenshot: PNG` row or detached URL is provenance only.
+After exact images pass the lightweight visual gate and URLs are shortlisted, use `advanced-reference-capture` when available. In typed-media mode, use Quick Scan for broad inspiration, Style Analysis for visual-language evidence, and Structure + Style only for closer layout or flow comparison. Preserve the actual viewable attachment in the tool result; a separate `screenshot: PNG` row or detached URL is provenance only.
 
 In verified-local-artifact mode, use a browser or screenshot capability to capture source-page evidence when a stable original preview URL is unavailable. Save screenshots inside the controlled artifact directory passed to the verifier. Prefer one useful view per finalist, plus a key state when interaction is central.
 
@@ -132,6 +141,7 @@ Image delivery is a success condition:
 - Prefer the original creator's preview image. Preserve it as typed media or download it through the verifier so the final response does not depend on third-party hotlinking. When it cannot be acquired reliably, capture the relevant state from the canonical source page using the selected delivery mode.
 - Put the canonical source URL in the same card, immediately next to or below the image. A separate sources list does not satisfy this requirement.
 - Replace candidates whose images cannot be displayed or whose original source URL cannot be verified.
+- Replace candidates when the captured state no longer shows the visible evidence that qualified the preview. Search deeper within the same source or choose another candidate; do not rationalize an irrelevant frame after selection.
 - If safe, permitted research cannot produce the required number, return the available image cards as an explicitly incomplete result and state the shortfall. Never silently substitute text-only cards.
 - Never invent a preview or present a generated image as source evidence. Generated direction boards, when requested, must be labeled as synthesis and do not count toward the reference-image minimum.
 
@@ -163,6 +173,8 @@ Follow `references/output-contract.md`. The result must include, in this order:
 7. access limitations, confidence, and source freshness notes.
 
 Keep browsing evidence separate from synthesized recommendations. Do not claim a source says something visible only in another source.
+
+In Calibration mode, override the normal result structure: return exactly three image-and-URL cards, state the visible must-match cues and mismatch risk for each, ask which is closest, and stop. Do not return a full gallery, pattern synthesis, or directions until the user confirms an anchor.
 
 ## Boundaries
 

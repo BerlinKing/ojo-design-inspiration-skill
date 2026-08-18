@@ -55,7 +55,12 @@ function candidate(overrides = {}) {
     imageAlt: "A verified design reference",
     sourceFamily: "live-product",
     searchLane: "domain",
-    scores: { projectFit: 5, patternValue: 4, emotionalFit: 3, evidenceQuality: 5, distinctiveness: 3, sourceQuality: 4 },
+    referenceRole: "core",
+    visibleEvidence: ["Visible product surface", "Visible domain-specific imagery"],
+    mustMatchHits: ["Target surface", "Required visual cue"],
+    hardViolations: [],
+    mismatchRisks: [],
+    scores: { surfaceFit: 5, subjectFit: 5, visualCueFit: 5, toneFit: 4, transferability: 5, evidenceQuality: 5 },
     ...overrides,
   };
 }

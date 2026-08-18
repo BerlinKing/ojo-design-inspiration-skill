@@ -2,6 +2,13 @@
 
 Use this as a routing map, not as a permanent whitelist. Access, pricing, indexing, and community quality change. Verify current availability and the original source during every research run.
 
+## Contents
+
+- Source selection by evidence need and product question
+- Query construction, order, and correction handling
+- Evidence and image acquisition rules
+- Access and safety
+
 ## Choose Sources by Evidence Need
 
 | Evidence need | Prefer | Useful public fallbacks | Caveat |
@@ -59,6 +66,25 @@ collectible field guide playful membership visual identity
 ```
 
 The first two queries explore the domain, the next two explore reusable interactions, and the last two expand trust and emotional language.
+
+### Query Order and Correction Handling
+
+Run queries in this order:
+
+1. literal subject + target artifact or surface;
+2. required visible cue + target artifact or surface;
+3. transferable interaction or layout pattern;
+4. adjacent emotion only after direct lanes produce viable candidates.
+
+After the user rejects a result set, convert the correction into a contrast brief. Preserve what the user wants, what the rejected images visibly overemphasized, and what must not recur. Search for the positive side of the contrast, then screen every image against the negative anchors. Do not depend on a long bag-of-adjectives query to perform visual judgment.
+
+Example:
+
+```text
+Must match: motorsport website hero + track perspective + visible speed cue
+May explore: condensed typography + telemetry rhythm + cold industrial material
+Reject: portrait-led frame + generic sports campaign + fashion ecommerce grid
+```
 
 ## Evidence Quality Rules
 

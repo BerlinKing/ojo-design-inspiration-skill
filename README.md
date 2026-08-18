@@ -7,6 +7,8 @@
 - A compact research brief grounded in the current project.
 - Three search lanes: same domain, same interaction problem, and adjacent emotional experience.
 - An image-first shortlist of 5-8 references, each with a visible image and canonical source URL.
+- Exact-image relevance gates that reject domain-adjacent but visually off-target frames.
+- A three-image calibration round after the user rejects or materially redirects a result set.
 - Two or three original design directions with provenance and anti-copy boundaries.
 - A recommended direction and an optional machine-readable `design_direction` JSON result.
 
@@ -29,6 +31,7 @@ references/output-contract.md
 scripts/select-candidates.mjs
 scripts/verify-image-references.mjs
 test/image-references.test.mjs
+scripts/select-candidates.test.mjs
 ```
 
 The Skill uses standard `name` and `description` frontmatter plus Codex interface metadata in `agents/openai.yaml`. Ojo can derive the runtime skill id from `name` and uses its native typed-media result path for reference images.
@@ -52,7 +55,8 @@ Then run the bundled dependency-free selector:
 node scripts/select-candidates.mjs \
   --input verified-candidates.json \
   --limit 8 \
-  --max-per-family 3
+  --max-per-family 3 \
+  --max-mood 1
 ```
 
 Input shape and scoring fields are documented in `references/selection-and-originality.md`.
@@ -63,4 +67,5 @@ Input shape and scoring fields are documented in `references/selection-and-origi
 - Remote content is treated as untrusted evidence.
 - Final directions must combine multiple references and must not reproduce protected brand assets, copy, or distinctive compositions.
 - Every final reference must render an image beside its canonical source URL.
+- Core references must pass non-compensating surface, subject, and visible-cue thresholds; mood references cannot replace them.
 - Source access, authorship, freshness, confidence, and licensing limitations remain visible in the result.

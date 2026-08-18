@@ -2,9 +2,18 @@
 
 Return a curated, image-first design result. Do not return a raw browsing diary, an unranked list of links, or a text-only reference list.
 
+## Contents
+
+- Non-negotiable delivery contract
+- Visual gallery and calibration mode
+- Research brief, patterns, directions, and recommendation
+- Machine-readable contract
+- Final quality gate
+
 ## Non-Negotiable Delivery Contract
 
 - A complete default result contains 5-8 reference cards and every card renders at least one real source image or captured source screenshot through typed media or a verified local artifact.
+- At least half of a complete result, and never fewer than three when the requested count permits, are `core` references. Include at most one `mood` reference.
 - Every image card displays its canonical source URL immediately beside or below the image.
 - Both the image and source URL are required. Missing either one disqualifies the card from the final gallery.
 - Generated images never count as source references. Label generated direction boards as synthesis.
@@ -29,15 +38,31 @@ Source: [Original project page](https://canonical.example/project)
 
 Keep the image, title, creator, and source link in the same card. Then include:
 
+- reference role: `core`, `pattern`, or `mood`;
 - source family and search lane;
-- the exact observed pattern;
+- the exact visible evidence and must-match cues;
 - why it matters to this project;
+- mismatch risk;
 - what not to copy;
 - confidence and freshness or access note.
 
 If the image is a captured screenshot, link the card to the page that was captured, not merely to the screenshot artifact.
 
 Use the absolute artifact path emitted by `verify-image-references.mjs`; do not substitute the original remote preview URL. When the client requires a native image attachment instead of Markdown, attach the verified artifact through the client and keep the canonical source link in the same card. A tool handle printed as text is not an image.
+
+Do not use explanatory prose to rescue a weak image. The image itself must support the stated role and match claims.
+
+### Calibration Mode Override
+
+After the user rejects or materially redirects a returned set, replace the normal structure with exactly three calibration cards. Every card must pass the `core` gate and include:
+
+- a visible image and canonical source URL;
+- the axis intentionally varied from the other two cards;
+- at least two visible must-match cues;
+- one honest mismatch risk, or `none observed`;
+- one concise question asking which card is closest.
+
+Stop after the question. Do not return the full 5-8 reference gallery, pattern synthesis, design directions, recommendation, or JSON block until the user confirms an anchor.
 
 ### 2. Research Brief
 
@@ -118,6 +143,7 @@ When the client supports structured output, append one valid JSON block with the
         "creator": "",
         "source_family": "live-product|flow-library|web-gallery|portfolio|editorial|open-code|social",
         "search_lane": "domain|interaction|adjacent",
+        "reference_role": "core|pattern|mood",
         "source_url": "",
         "preview_image_url": "",
         "image_kind": "source-preview|captured-screenshot",
@@ -136,6 +162,9 @@ When the client supports structured output, append one valid JSON block with the
           "height": 0,
           "sha256": ""
         },
+        "visible_evidence": [],
+        "must_match_hits": [],
+        "mismatch_risks": [],
         "observed_pattern": "",
         "project_relevance": "",
         "avoid_copying": "",
@@ -192,6 +221,9 @@ Before returning the result, confirm:
 - every reference renders a visible image before any text-only analysis;
 - every image has its canonical source URL in the same card;
 - every visual claim was actually observed;
+- every final reference passes its role-specific relevance gate and has no hard violation;
+- the gallery satisfies the core-reference minimum and mood-reference maximum;
+- calibration mode returns exactly three passing core cards and stops for user confirmation;
 - preview images are real evidence, not generated stand-ins;
 - the shortlist is deduplicated and source-diverse;
 - each direction combines multiple references;
