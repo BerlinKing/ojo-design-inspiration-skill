@@ -42,12 +42,12 @@ Use confidence separately from score:
 A candidate may be scored provisionally without an image, but it cannot become a final reference until all of these are true:
 
 1. `sourceUrl` resolves to the canonical creator, product, repository, or publication page.
-2. `previewImageUrl` renders a meaningful source image, or points to a captured screenshot artifact from that page.
+2. The image is either a viewable MIME-typed attachment preserved from the current tool result or an absolute local artifact produced or checked by `scripts/verify-image-references.mjs`.
 3. The image visibly supports the observation made in the card.
-4. The image and source URL can be displayed together in the final response.
+4. Typed media remains viewable in the current result, or `imageVerification.status` is `verified` and its hash still matches the local artifact; the image and source URL can be displayed together in the final response.
 5. The image is not an AI-generated substitute for unavailable source evidence.
 
-Fail closed: replace candidates that do not pass. A complete default result contains 5-8 passing references. If fewer are obtainable after the permitted search and capture attempts, label the result incomplete and report the exact shortfall.
+Fail closed: replace candidates that do not pass. A detached media label, resource handle printed as text, or remote URL that was merely observed does not pass. A complete default result contains 5-8 passing references. If fewer are obtainable after the permitted search and capture attempts, label the result incomplete and report the exact shortfall.
 
 ## Deduplication
 
@@ -90,7 +90,11 @@ Use this working-pool shape:
 }
 ```
 
-Every score is 0-5. The script rejects candidates without both a canonical source URL and `previewImageUrl`. It intentionally returns fewer than the requested limit when filling the limit would break the source-family cap. Review the rejected and duplicate lists before choosing finalists.
+The working pool may contain a remote preview URL. In typed-media mode, replace it with the actual viewable tool attachment during capture and retain the remote location only as provenance. Do not run typed attachments through the local selector.
+
+In verified-local-artifact mode, run `scripts/verify-image-references.mjs` before selection. It validates the response or controlled local screenshot, detects the image type and dimensions, materializes remote images, and replaces `previewImageUrl` with a verified absolute artifact path. Its output also adds `imageDelivery` and `imageVerification`; never author those objects manually.
+
+Every score is 0-5. For local mode, the selector rejects candidates whose verified artifact is missing, changed, or lacks verifier metadata. It intentionally returns fewer than the requested limit when filling the limit would break the source-family cap. Review the verifier rejections plus the selector's rejected and duplicate lists before choosing finalists. Apply the same ranking and diversity judgment manually to typed-media candidates.
 
 ## Diversity Gate
 
